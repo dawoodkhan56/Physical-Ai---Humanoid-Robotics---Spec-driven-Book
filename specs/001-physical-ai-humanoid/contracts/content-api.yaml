@@ -1,0 +1,170 @@
+# API Contract: Physical AI & Humanoid Robotics Content Delivery
+
+## Overview
+This document defines the API contract for content delivery of the Physical AI & Humanoid Robotics educational resource. This is primarily a static documentation site, but includes interactive elements and content management capabilities.
+
+## Base URL
+```
+https://physical-ai-humanoid-book.example.com
+```
+
+## Content Endpoints
+
+### GET /api/content/module/{moduleId}
+Retrieve module information and metadata.
+
+**Path Parameters:**
+- `moduleId` (string, required): The unique identifier of the module (e.g., "module-1-robotic-nervous-system")
+
+**Response:**
+```json
+{
+  "id": "module-1-robotic-nervous-system",
+  "title": "The Robotic Nervous System",
+  "duration": 2,
+  "objectives": [
+    "Understand ROS 2 architecture and core concepts",
+    "Learn communication patterns in robotic systems",
+    "Implement basic ROS 2 nodes and messages"
+  ],
+  "prerequisites": [
+    "Basic programming knowledge",
+    "Understanding of robotics fundamentals"
+  ],
+  "lessons": [
+    {
+      "id": "lesson-1-ros2-overview",
+      "title": "ROS 2 Overview",
+      "sequence": 1,
+      "duration": 4,
+      "contentPath": "/docs/module-1-robotic-nervous-system/ros2-overview"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "exercise-1-ros2-nodes",
+      "title": "Creating Your First ROS 2 Nodes",
+      "type": "implementation",
+      "difficulty": "beginner"
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "kc-mod1-basics",
+      "title": "Module 1 Knowledge Check: Basics",
+      "passingScore": 80
+    }
+  ]
+}
+```
+
+### GET /api/content/module/{moduleId}/progress
+Track learner progress for a specific module.
+
+**Path Parameters:**
+- `moduleId` (string, required): The unique identifier of the module
+
+**Query Parameters:**
+- `userId` (string, required): The unique identifier of the user
+
+**Response:**
+```json
+{
+  "moduleId": "module-1-robotic-nervous-system",
+  "userId": "user-12345",
+  "progress": 45.5,
+  "lessonsCompleted": [
+    "lesson-1-ros2-overview"
+  ],
+  "exercisesCompleted": [],
+  "currentLesson": "lesson-2-ros2-architecture",
+  "lastAccessed": "2025-01-15T10:30:00Z",
+  "estimatedCompletionTime": "3 days"
+}
+```
+
+### POST /api/content/module/{moduleId}/progress
+Update learner progress for a specific module.
+
+**Path Parameters:**
+- `moduleId` (string, required): The unique identifier of the module
+
+**Request Body:**
+```json
+{
+  "userId": "user-12345",
+  "lessonId": "lesson-2-ros2-architecture",
+  "completed": true,
+  "timeSpent": 120  // in minutes
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "newProgress": 65.2,
+  "nextRecommended": "/docs/module-1-robotic-nervous-system/communication-patterns"
+}
+```
+
+### GET /api/search
+Search across all content in the documentation.
+
+**Query Parameters:**
+- `q` (string, required): Search query
+- `limit` (integer, optional): Number of results to return (default: 10, max: 50)
+- `module` (string, optional): Limit search to specific module ID
+
+**Response:**
+```json
+{
+  "query": "ROS 2 architecture",
+  "totalResults": 12,
+  "results": [
+    {
+      "id": "lesson-2-ros2-architecture",
+      "title": "ROS 2 Architecture",
+      "module": "module-1-robotic-nervous-system",
+      "path": "/docs/module-1-robotic-nervous-system/ros2-architecture",
+      "summary": "Detailed overview of ROS 2 architecture including nodes, topics, services, and actions...",
+      "relevance": 0.95
+    }
+  ]
+}
+```
+
+## Common Response Format
+
+All endpoints return JSON responses with the following common structure:
+
+```json
+{
+  "success": true,
+  "data": { /* endpoint-specific data */ },
+  "timestamp": "2025-01-15T10:30:00Z",
+  "version": "1.0.0"
+}
+```
+
+Error responses include an additional error field:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Module with ID module-999 not found"
+  },
+  "timestamp": "2025-01-15T10:30:00Z",
+  "version": "1.0.0"
+}
+```
+
+## Error Codes
+
+- `NOT_FOUND`: Resource does not exist
+- `UNAUTHORIZED`: User not authorized to access resource
+- `VALIDATION_ERROR`: Request data doesn't meet requirements
+- `INTERNAL_ERROR`: Server-side error occurred
+- `RATE_LIMITED`: Too many requests from this client
